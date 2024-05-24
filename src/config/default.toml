@@ -1,0 +1,21 @@
+# 默认配置文件模板
+
+# 网站相关配置
+[website]
+title = "SongList Sample"   # 网站标题
+enable_editor = true # 是否启用网页端歌单编辑器，默认启用
+
+# 各平台账号链接，每条格式如下：
+#
+# [[links]]
+# name = ""     # 该平台的显示名称
+# icon = ""     # 该平台的图标，请将图标文件放置在public目录下
+# link = ""     # 链接地址
+#
+# 要添加多个平台链接，请复制粘贴以上内容并进行修改
+# 以下为示例配置：
+
+[[links]]
+name = "Astro"
+icon = "astro.svg"
+link = "https://docs.astro.build/zh-cn/getting-started/"

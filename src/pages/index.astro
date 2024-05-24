@@ -1,5 +1,5 @@
 ---
-
+import config from "../config/config.ts";
 ---
 
 <html lang="en">
@@ -8,9 +8,26 @@
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
+		<title>{config.website.title}</title>
 	</head>
 	<body>
-		<h1>Astro</h1>
+		{/* 配置文件读取测试 */}
+		<p>website title: {config.website.title}</p>
+		{config.website.enable_editor && <p>editor enabled</p>}
+		<p>links:</p>
+		{
+			config.links?.map((l) => (
+				<div class="bg-gray-500">
+					<a href={l.link}>
+						<img
+							src={"public/" + l.icon}
+							alt={l.name}
+							class="w-6 h-6"
+						/>
+						{l.name}
+					</a>
+				</div>
+			))
+		}
 	</body>
 </html>

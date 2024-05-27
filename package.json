@@ -13,6 +13,7 @@
     "@astrojs/check": "^0.7.0",
     "@astrojs/tailwind": "^5.1.0",
     "@astrojs/vue": "^4.3.0",
+    "@vueuse/core": "^10.10.0",
     "astro": "^4.8.7",
     "exceljs": "^4.4.0",
     "smol-toml": "^1.2.0",

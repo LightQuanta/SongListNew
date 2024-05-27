@@ -19,11 +19,13 @@ import config from "../config/config.ts";
 			config.links?.map((l) => (
 				<div class="bg-gray-500">
 					<a href={l.link}>
-						<img
-							src={"public/" + l.icon}
-							alt={l.name}
-							class="w-6 h-6"
-						/>
+						{l.icon && (
+							<img
+								src={"public/" + l.icon}
+								alt={l.name}
+								class="w-6 h-6"
+							/>
+						)}
 						{l.name}
 					</a>
 				</div>

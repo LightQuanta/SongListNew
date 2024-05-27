@@ -4,12 +4,12 @@ import { z } from 'zod'
 
 // TODO 设计更多配置项
 const websiteConfig = z.object({
-    title: z.string(),
+    title: z.string().min(1),
     enable_editor: z.boolean().default(true),
 })
 
 const links = z.object({
-    name: z.string(),
+    name: z.string().min(1),
     icon: z.string().optional(),
     link: z.string().url(),
 })

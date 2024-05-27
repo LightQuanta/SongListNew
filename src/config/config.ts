@@ -1,23 +1,25 @@
-import { parse } from 'smol-toml'
+import { parse as parseToml } from 'smol-toml'
 import { readFileSync } from 'fs'
+import { z } from 'zod'
 
 // TODO 设计更多配置项
-interface Config {
-    website: WebsiteConfig
-    links?: SocialLink[]
-}
+const websiteConfig = z.object({
+    title: z.string(),
+    enable_editor: z.boolean().default(true),
+})
 
-interface WebsiteConfig {
-    title: string
-    enable_editor: boolean
-}
+const links = z.object({
+    name: z.string(),
+    icon: z.string().optional(),
+    link: z.string().url(),
+})
 
-interface SocialLink {
-    name: string
-    icon: string
-    link: string
-}
+const vaildator = z.object({
+    website: websiteConfig,
+    links: links.array().optional(),
+})
 
 // TODO 实现用户自定义配置文件读取
-const config = parse(readFileSync('src/config/default.toml', 'utf-8')) as unknown as Config
+const config = vaildator.parse(parseToml(readFileSync('src/config/default.toml', 'utf-8')))
+
 export default config

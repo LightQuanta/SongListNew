@@ -54,14 +54,29 @@ import { stringify as toToml } from 'smol-toml'
 import type { SongInfo } from '../types'
 
 import 'element-plus/dist/index.css'
-import { ElDialog, ElButton, ElTable, ElTableColumn, ElSelect, ElOption, ElMessage, ElRow, ElLoading } from 'element-plus'
+import { ElDialog, ElButton, ElTable, ElTableColumn, ElSelect, ElOption, ElMessage, ElRow, ElLoading, ElMessageBox } from 'element-plus'
 
-const { open, onChange } = useFileDialog({
+const { open: openFileDialog, onChange } = useFileDialog({
     multiple: false,
     accept: '.xlsx',
 })
 const loading = ref(false)
 let waitForDialog = ref<(value: boolean) => void>()
+
+const open = () => {
+    if (songs.value.length > 0) {
+        ElMessageBox.confirm('导入歌单将会覆盖当前歌单内容，是否继续导入', '警告', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning',
+            center: true,
+        }).then(() => {
+            openFileDialog()
+        })
+    } else {
+        openFileDialog()
+    }
+}
 
 // todo!: 临时增加的全局遮罩，table完成后删除
 let loadingService: any
@@ -248,6 +263,7 @@ onChange(async (files) => {
             }
         ).filter(s => s.name.trim() !== '') ?? []
         loading.value = false
+        ElMessage.success('上传成功')
     }
     reader.readAsArrayBuffer(file)
 })

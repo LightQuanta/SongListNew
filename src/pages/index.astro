@@ -1,5 +1,6 @@
 ---
 import config from "../config/config.ts";
+import SongList from "../components/SongList.vue";
 ---
 
 <html lang="en">
@@ -31,5 +32,7 @@ import config from "../config/config.ts";
 				</div>
 			))
 		}
+
+		<SongList songs={[]} client:load />
 	</body>
 </html>

@@ -31,16 +31,7 @@ import { ref } from 'vue'
 import { useFileDialog } from '@vueuse/core'
 import Excel from "exceljs";
 import { stringify as toToml } from 'smol-toml'
-
-// TODO　将歌曲信息修改为更通用的格式
-interface SongInfo {
-    name: string;
-    artist: string;
-    language: string;
-    tags?: string;
-    BVID?: string;
-    url?: string;
-}
+import type { SongInfo } from '../types'
 
 const { open, onChange } = useFileDialog({
     multiple: false,
@@ -64,9 +55,9 @@ onChange(async (files) => {
         songs.value = worksheet1.getRows(2, worksheet1.rowCount)?.map(
             (row) => {
                 const song: SongInfo = {
-                    name: row.getCell(1).text,
-                    artist: row.getCell(2).text,
-                    language: row.getCell(3).text,
+                    name: row.getCell(1).text.trim(),
+                    artist: row.getCell(2).text.trim(),
+                    language: row.getCell(3).text.trim(),
                 };
                 row.getCell(4).text.trim() !== '' && (song.tags = row.getCell(4).text);
                 row.getCell(5).text.trim() !== '' && (song.BVID = row.getCell(5).text);

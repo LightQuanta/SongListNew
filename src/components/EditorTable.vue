@@ -168,7 +168,12 @@ onChange(async (files) => {
         // 处理剩余内容
         songs.value = worksheet1.getRows(2, worksheet1.rowCount)?.map(
             (row, index) => {
-                const song: SongInfo = {} as SongInfo
+                const song: SongInfo = {
+                    id: -1,
+                    name: '',
+                    artist: '',
+                    language: ''
+                }
                 let hasId = false
                 // 按照首行定义处理每一列
                 for (let i = 0; i < row.cellCount; i++) {
@@ -218,10 +223,10 @@ onChange(async (files) => {
                     }
                 }
                 // 未定义ID列则使用自增index
-                if (!hasId) song.id = index +1
-                return (song.name !== undefined && song.name !== '') ? song : null
+                if (!hasId) song.id = index + 1
+                return song
             }
-        ).filter(s => s !== null && s?.name.trim() !== '') as SongInfo[] ?? []
+        ).filter(s => s.name.trim() !== '') ?? []
         loading.value = false
     }
     reader.readAsArrayBuffer(file)

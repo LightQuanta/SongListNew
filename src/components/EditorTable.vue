@@ -1,7 +1,9 @@
 <template>
-    <el-button class="p-5 border" @click="open()">上传xlsx</el-button>
-    <el-button class="p-5 border" @click="exportToml()" v-if="songs.length > 0">导出toml格式歌单信息</el-button>
-    <table class="flex items-stretch flex-col" v-loading="loading">
+    <el-row class="m-4">
+        <el-button class="p-5 border" @click="open()" type="primary">上传xlsx</el-button>
+        <el-button class="p-5 border" @click="exportToml()" v-if="songs.length > 0">导出toml格式歌单信息</el-button>
+    </el-row>
+    <table class="flex items-stretch flex-col w-full" v-loading="loading">
         <thead>
             <tr class="flex content-center">
                 <th class="flex-1">歌名</th>
@@ -37,20 +39,22 @@
                 </template>
             </el-table-column>
         </el-table>
-        <el-button @click="showDialog = false; waitForDialog?.(false)">取消</el-button>
-        <el-button @click="verifyTypes">确定</el-button>
+        <el-row class="mt-3" justify="end">
+            <el-button @click="showDialog = false; waitForDialog?.(false)">取消</el-button>
+            <el-button @click="verifyTypes" type="primary">确定</el-button>
+        </el-row>
     </el-dialog>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useFileDialog } from '@vueuse/core'
 import Excel from "exceljs";
 import { stringify as toToml } from 'smol-toml'
 import type { SongInfo } from '../types'
 
 import 'element-plus/dist/index.css'
-import { ElDialog, ElButton, ElTable, ElTableColumn, ElSelect, ElOption, ElMessage } from 'element-plus'
+import { ElDialog, ElButton, ElTable, ElTableColumn, ElSelect, ElOption, ElMessage, ElRow, ElLoading } from 'element-plus'
 
 const { open, onChange } = useFileDialog({
     multiple: false,
@@ -58,6 +62,22 @@ const { open, onChange } = useFileDialog({
 })
 const loading = ref(false)
 let waitForDialog = ref<(value: boolean) => void>()
+
+// todo!: 临时增加的全局遮罩，table完成后删除
+let loadingService: any
+watch(loading, (value) => {
+    if (!value) {
+        loadingService?.close()
+    }
+    else {
+        loadingService = ElLoading.service({
+            lock: true,
+            text: 'Loading',
+            background: 'rgba(0, 0, 0, 0.7)',
+            fullscreen: true,
+        })
+    }
+})
 
 type DataType = keyof SongInfo | 'BVID' | 'neteaseRadio' | 'ignore'
 interface ExcelTitleInfo {

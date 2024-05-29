@@ -43,7 +43,8 @@
             <el-button @click="verifyTypes" type="primary">确定</el-button>
         </el-row>
     </el-dialog>
-    <edit-column ref="columnEditor" :title-and-desc="titleTypesAndDesc" />
+    <edit-column @on-update-column="(config) => console.log(config)" ref="columnEditor"
+        :title-and-desc="titleTypesAndDesc" />
 </template>
 
 <script setup lang="ts">

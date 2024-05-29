@@ -267,7 +267,7 @@ onChange(async (files) => {
         ).filter(s => s.name.trim() !== '') ?? []
 
         // 默认启用上传的表格中指定的列
-        props.config.titles = rowTitleData.value.filter(t => t.dataType !== 'ignore')
+        props.config.titles = [...new Set(rowTitleData.value.filter(t => t.dataType !== 'ignore')
             .sort((a, b) => a.id - b.id)
             .map(t => t.dataType)
             .map(t => {
@@ -275,7 +275,7 @@ onChange(async (files) => {
                     return 'links'
                 }
                 return t
-            }) as (keyof SongInfo)[]
+            }))] as (keyof SongInfo)[]
 
         loading.value = false
         ElMessage.success('导入成功')

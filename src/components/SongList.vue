@@ -6,8 +6,7 @@
                 <th class="flex-1">原唱</th>
                 <th class="flex-1">语言</th>
                 <th class="flex-1">标签</th>
-                <th class="flex-1">BVID</th>
-                <th class="flex-1">URL</th>
+                <th class="flex-1">links</th>
             </tr>
         </thead>
         <tbody>
@@ -16,8 +15,7 @@
                 <td class="flex-1">{{ s.artist }}</td>
                 <td class="flex-1">{{ s.language }}</td>
                 <td class="flex-1">{{ s.tags }}</td>
-                <td class="flex-1">{{ s.BVID }}</td>
-                <td class="flex-1">{{ s.url }}</td>
+                <td class="flex-1">{{ s.links }}</td>
             </tr>
         </tbody>
     </table>

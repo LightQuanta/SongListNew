@@ -47,7 +47,7 @@ import { computed, ref, watch } from 'vue'
 import { useFileDialog } from '@vueuse/core'
 import Excel from "exceljs";
 import { stringify as toToml } from 'smol-toml'
-import type { SongInfo, SongConfig, Titles } from '../types'
+import type { SongInfo, SongConfig } from '../types'
 
 import 'element-plus/dist/index.css'
 import { ElDialog, ElButton, ElTable, ElTableColumn, ElSelect, ElOption, ElMessage, ElRow, ElLoading, ElMessageBox } from 'element-plus'
@@ -96,10 +96,11 @@ watch(loading, (value) => {
 })
 
 type DataType = keyof SongInfo | 'BVID' | 'neteaseRadio' | 'ignore'
-interface ExcelTitleInfo {
-    id: number
-    name: string
-    dataType: DataType
+
+type ExcelTitleInfo = {
+    id: number,
+    name: string,
+    dataType: DataType,
 }
 
 const titleTypesAndDesc: Record<string, string> = {
@@ -274,7 +275,7 @@ onChange(async (files) => {
                     return 'links'
                 }
                 return t
-            }) as Titles[]
+            }) as (keyof SongInfo)[]
 
         loading.value = false
         ElMessage.success('导入成功')

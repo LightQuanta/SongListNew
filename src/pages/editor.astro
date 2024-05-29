@@ -1,5 +1,6 @@
 ---
 import EditorTable from "../components/EditorTable.vue";
+import config from "../config/songlist.ts";
 ---
 
 <!doctype html>
@@ -11,6 +12,6 @@ import EditorTable from "../components/EditorTable.vue";
   </head>
   <body>
     {/* TODO 修改为正确的页面样式、渲染等 */}
-    <EditorTable client:only="vue" />
+    <EditorTable config={config} client:only="vue" />
   </body>
 </html>

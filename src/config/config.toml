@@ -19,3 +19,7 @@ enable_editor = true      # 是否启用网页端歌单编辑器，默认启用
 name = "Astro"
 icon = "astro.svg"
 link = "https://docs.astro.build/zh-cn/getting-started/"
+
+[[links]]
+name = "Test"
+link = "https://example.com"

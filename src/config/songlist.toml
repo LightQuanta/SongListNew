@@ -1,0 +1,28 @@
+# 示例歌单配置文件
+
+# 要显示的表格标题
+titles = ["id", "name", "artist", "language", "tags", "links"]
+
+# 表格标题，可按需修改
+[display_name]
+# id = "序号"
+# name = "歌名"
+# artist = "原唱"
+# language = "语种"
+# alias = "歌曲别名"
+# tags = "标签"
+# remark = "备注"
+# paid = "是否付费"
+# top = "是否置顶"
+# sc = "SC"
+# date = "日期"
+# links = "链接"
+
+# 歌曲列表
+[[songs]]
+id = 1
+name = "示例歌名"
+artist = "示例歌手"
+language = "中文"
+tags = ["示例标签"]
+links = ["https://example.com/"]

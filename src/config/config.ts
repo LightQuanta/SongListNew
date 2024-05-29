@@ -20,6 +20,6 @@ const vaildator = z.object({
 })
 
 // TODO 实现用户自定义配置文件读取
-const config = vaildator.parse(parseToml(readFileSync('src/config/default.toml', 'utf-8')))
+const config = vaildator.parse(parseToml(readFileSync('src/config/config.toml', 'utf-8')))
 
 export default config

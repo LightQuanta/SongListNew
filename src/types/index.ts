@@ -1,3 +1,5 @@
+import config from '../config/songlist.ts'
+
 export interface SongInfo {
     id: number
     name: string
@@ -14,3 +16,6 @@ export interface SongInfo {
     date?: string[]
     links?: string[]
 }
+
+type SongConfig = typeof config
+export type { SongConfig }

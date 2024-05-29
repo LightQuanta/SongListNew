@@ -5,21 +5,17 @@
     </el-row>
     <table class="flex items-stretch flex-col w-full" v-loading="loading">
         <thead>
-            <tr class="flex content-center">
-                <th class="flex-1">歌名</th>
-                <th class="flex-1">原唱</th>
-                <th class="flex-1">语言</th>
-                <th class="flex-1">标签</th>
-                <th class="flex-1">URL</th>
+            <tr class="flex content-center sticky top-0">
+                <th class="flex-1" v-for="t in config.titles">
+                    {{ config.display_name[t] }}
+                </th>
             </tr>
         </thead>
         <tbody>
             <tr class="flex content-center justify-center text-center" v-for="s in songs" :key="s.name">
-                <td class="flex-1">{{ s.name }}</td>
-                <td class="flex-1">{{ s.artist }}</td>
-                <td class="flex-1">{{ s.language }}</td>
-                <td class="flex-1">{{ s.tags }}</td>
-                <td class="flex-1 text-nowrap overflow-hidden">{{ s.links }}</td>
+                <td class="flex-1" v-for="t in config.titles" :key="t">
+                    {{ s[t] }}
+                </td>
             </tr>
         </tbody>
     </table>
@@ -51,10 +47,15 @@ import { computed, ref, watch } from 'vue'
 import { useFileDialog } from '@vueuse/core'
 import Excel from "exceljs";
 import { stringify as toToml } from 'smol-toml'
-import type { SongInfo } from '../types'
+import type { SongInfo, SongConfig } from '../types'
 
 import 'element-plus/dist/index.css'
 import { ElDialog, ElButton, ElTable, ElTableColumn, ElSelect, ElOption, ElMessage, ElRow, ElLoading, ElMessageBox } from 'element-plus'
+
+const props = defineProps<{
+    config: SongConfig
+}>()
+
 
 const { open: openFileDialog, onChange } = useFileDialog({
     multiple: false,
@@ -279,5 +280,5 @@ const exportToml = () => {
     a.click()
 }
 
-const songs = ref<SongInfo[]>([])
+const songs = ref<SongInfo[]>(props.config.songs)
 </script>

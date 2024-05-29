@@ -14,12 +14,13 @@ const links = z.object({
     link: z.string().url(),
 })
 
-const vaildator = z.object({
+const WebsiteConfig = z.object({
     website: websiteConfig,
     links: links.array().optional(),
 })
 
 // TODO 实现用户自定义配置文件读取
-const config = vaildator.parse(parseToml(readFileSync('src/config/config.toml', 'utf-8')))
+const config = WebsiteConfig.parse(parseToml(readFileSync('src/config/default/config.toml', 'utf-8')))
 
 export default config
+export { WebsiteConfig }

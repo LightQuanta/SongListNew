@@ -102,10 +102,11 @@ watch(loading, (value) => {
 })
 
 type DataType = keyof SongInfo | 'BVID' | 'neteaseRadio' | 'ignore'
-interface ExcelTitleInfo {
-    id: number
-    name: string
-    dataType: DataType
+
+type ExcelTitleInfo = {
+    id: number,
+    name: string,
+    dataType: DataType,
 }
 
 const titleTypesAndDesc: Record<string, string> = {
@@ -228,6 +229,7 @@ onChange(async (files) => {
                             case 'artist': song.artist = text; break;
                             case 'alias': song.alias?.push(text) ?? (song.alias = [text]); break;
                             case 'language': song.language = text; break;
+                            case 'remark': song.remark = text; break;
                             case 'tags': {
                                 const tags = text.replaceAll('，', ',')
                                     .replaceAll('；', ';')
@@ -269,15 +271,31 @@ onChange(async (files) => {
                 return song
             }
         ).filter(s => s.name.trim() !== '') ?? []
+
+        // 默认启用上传的表格中指定的列
+        props.config.titles = [...new Set(rowTitleData.value.filter(t => t.dataType !== 'ignore')
+            .sort((a, b) => a.id - b.id)
+            .map(t => t.dataType)
+            .map(t => {
+                if (t === 'BVID' || t === 'neteaseRadio') {
+                    return 'links'
+                }
+                return t
+            }))] as (keyof SongInfo)[]
+
         loading.value = false
-        ElMessage.success('上传成功')
+        ElMessage.success('导入成功')
     }
     reader.readAsArrayBuffer(file)
 })
 
 // 将歌单导出为toml配置文件
 const exportToml = () => {
-    const toml = toToml({ songs: songs.value })
+    const toml = toToml({
+        titles: props.config.titles,
+        display_name: props.config.display_name,
+        songs: songs.value,
+    })
     const blob = new Blob([toml], { type: 'text/plain;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')

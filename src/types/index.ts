@@ -1,21 +1,13 @@
-import config from '../config/songlist.ts'
+import { SongInfo as zSongInfo, SongConfig as zSongConfig } from '../config/songlist.ts'
+import { WebsiteConfig as zWebsiteConfig } from '../config/config.ts'
+import { z } from 'zod'
 
-export interface SongInfo {
-    id: number
-    name: string
-    artist: string
-    language: string
-    alias?: string[]
-    tags?: string[]
-    remark?: string
+type SongInfo = z.infer<typeof zSongInfo>
+type SongConfig = z.infer<typeof zSongConfig>
+type WebsiteConfig = z.infer<typeof zWebsiteConfig>
 
-    paid?: boolean
-    top?: boolean
-    sc?: number
-
-    date?: string[]
-    links?: string[]
+export type {
+    SongInfo,
+    SongConfig,
+    WebsiteConfig
 }
-
-type SongConfig = typeof config
-export type { SongConfig }

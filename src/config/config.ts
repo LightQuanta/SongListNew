@@ -20,7 +20,7 @@ const WebsiteConfig = z.object({
 })
 
 // TODO 实现用户自定义配置文件读取
-const config = WebsiteConfig.parse(parseToml(readFileSync('src/config/config.toml', 'utf-8')))
+const config = WebsiteConfig.parse(parseToml(readFileSync('src/config/default/config.toml', 'utf-8')))
 
 export default config
 export { WebsiteConfig }

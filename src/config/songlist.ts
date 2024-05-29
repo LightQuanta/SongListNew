@@ -40,7 +40,7 @@ const SongConfig = z.object({
 
 
 // TODO 实现用户自定义配置文件读取
-const config = SongConfig.parse(parseToml(readFileSync('src/config/songlist.toml', 'utf-8')))
+const config = SongConfig.parse(parseToml(readFileSync('src/config/default/songlist.toml', 'utf-8')))
 
 export default config
 export { SongInfo, SongConfig }

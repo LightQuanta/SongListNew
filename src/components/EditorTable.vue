@@ -222,6 +222,7 @@ onChange(async (files) => {
                             case 'artist': song.artist = text; break;
                             case 'alias': song.alias?.push(text) ?? (song.alias = [text]); break;
                             case 'language': song.language = text; break;
+                            case 'remark': song.remark = text; break;
                             case 'tags': {
                                 const tags = text.replaceAll('，', ',')
                                     .replaceAll('；', ';')
@@ -283,7 +284,11 @@ onChange(async (files) => {
 
 // 将歌单导出为toml配置文件
 const exportToml = () => {
-    const toml = toToml({ songs: songs.value })
+    const toml = toToml({
+        titles: props.config.titles,
+        display_name: props.config.display_name,
+        songs: songs.value,
+    })
     const blob = new Blob([toml], { type: 'text/plain;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')

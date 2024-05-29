@@ -47,7 +47,7 @@ import { computed, ref, watch } from 'vue'
 import { useFileDialog } from '@vueuse/core'
 import Excel from "exceljs";
 import { stringify as toToml } from 'smol-toml'
-import type { SongInfo, SongConfig } from '../types'
+import type { SongInfo, SongConfig, Titles } from '../types'
 
 import 'element-plus/dist/index.css'
 import { ElDialog, ElButton, ElTable, ElTableColumn, ElSelect, ElOption, ElMessage, ElRow, ElLoading, ElMessageBox } from 'element-plus'
@@ -263,8 +263,20 @@ onChange(async (files) => {
                 return song
             }
         ).filter(s => s.name.trim() !== '') ?? []
+
+        // 默认启用上传的表格中指定的列
+        props.config.titles = rowTitleData.value.filter(t => t.dataType !== 'ignore')
+            .sort((a, b) => a.id - b.id)
+            .map(t => t.dataType)
+            .map(t => {
+                if (t === 'BVID' || t === 'neteaseRadio') {
+                    return 'links'
+                }
+                return t
+            }) as Titles[]
+
         loading.value = false
-        ElMessage.success('上传成功')
+        ElMessage.success('导入成功')
     }
     reader.readAsArrayBuffer(file)
 })

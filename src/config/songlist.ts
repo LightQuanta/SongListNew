@@ -59,3 +59,4 @@ const songConfig = z.object({
 const config = songConfig.parse(parseToml(readFileSync('src/config/songlist.toml', 'utf-8')))
 
 export default config
+export type { Titles }

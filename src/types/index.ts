@@ -1,4 +1,5 @@
 import config from '../config/songlist.ts'
+import type { Titles } from '../config/songlist.ts'
 
 export interface SongInfo {
     id: number
@@ -19,3 +20,4 @@ export interface SongInfo {
 
 type SongConfig = typeof config
 export type { SongConfig }
+export type { Titles }

@@ -2,6 +2,9 @@
     <el-row class="m-4">
         <el-button class="p-5 border" @click="open()" type="primary">上传xlsx</el-button>
         <el-button class="p-5 border" @click="exportToml()" v-if="songs.length > 0">导出toml格式歌单信息</el-button>
+        <el-button class="p-5 border" @click="columnEditor.openDialog(props.config)">
+            打开歌单表头编辑器
+        </el-button>
     </el-row>
     <table class="flex items-stretch flex-col w-full" v-loading="loading">
         <thead>
@@ -40,6 +43,7 @@
             <el-button @click="verifyTypes" type="primary">确定</el-button>
         </el-row>
     </el-dialog>
+    <edit-column ref="columnEditor" :title-and-desc="titleTypesAndDesc" />
 </template>
 
 <script setup lang="ts">
@@ -48,6 +52,7 @@ import { useFileDialog } from '@vueuse/core'
 import Excel from "exceljs";
 import { stringify as toToml } from 'smol-toml'
 import type { SongInfo, SongConfig } from '../types'
+import EditColumn from './EditorTable/EditColumn.vue'
 
 import 'element-plus/dist/index.css'
 import { ElDialog, ElButton, ElTable, ElTableColumn, ElSelect, ElOption, ElMessage, ElRow, ElLoading, ElMessageBox } from 'element-plus'
@@ -56,6 +61,7 @@ const props = defineProps<{
     config: SongConfig
 }>()
 
+const columnEditor = ref()
 
 const { open: openFileDialog, onChange } = useFileDialog({
     multiple: false,

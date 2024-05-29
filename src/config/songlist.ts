@@ -54,7 +54,6 @@ const songConfig = z.object({
     songs: songs.array(),
 })
 
-
 // TODO 实现用户自定义配置文件读取
 const config = songConfig.parse(parseToml(readFileSync('src/config/songlist.toml', 'utf-8')))
 

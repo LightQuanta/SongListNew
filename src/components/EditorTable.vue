@@ -5,16 +5,17 @@
         <el-button class="p-5 border" @click="columnEditor.openDialog(props.config)">
             打开歌单表头编辑器
         </el-button>
-        <el-button class="p-5 border" @click="toggleShowHeaderEditor()">Edit Head</el-button>
-        <!-- TODO 实现编辑列名，实现拖拽移动 -->
-        <div :class="`p-2 w-full mt-1 overflow-hidden transition-all h-${showHeaderEditor ? 15 : 0} border`">
+    </el-row>
+    <el-collapse class="mx-4">
+        <el-collapse-item title="Head Editor">
+            <!-- TODO 实现编辑列名，实现拖拽移动 -->
             <el-tag v-for="selected in selectedTitles" :key="selected" closable size="large" class="mx-1"
                 @close="selectedTitles.splice(selectedTitles.indexOf(selected), 1)">
                 {{ config.display_name[selected] }}
             </el-tag>
             <el-popover placement="bottom" :width="150" :visible="showAddTitle">
                 <template #reference>
-                    <el-button v-show="unSelectedTitles.length > 0" @click="showAddTitle = true">+ 添加</el-button>
+                    <el-button v-show="unSelectedTitles.length > 0" @click="showAddTitle = !showAddTitle">+ 添加</el-button>
                 </template>
                 <div class="flex flex-col flex-grow">
                     <el-button text class="!ml-0" v-for="t in unSelectedTitles"
@@ -23,8 +24,8 @@
                     </el-button>
                 </div>
             </el-popover>
-        </div>
-    </el-row>
+        </el-collapse-item>
+    </el-collapse>
     <table class="flex items-stretch flex-col w-full" v-loading="loading">
         <thead>
             <tr class="flex content-center sticky top-0">
@@ -68,7 +69,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { useFileDialog, useToggle } from '@vueuse/core'
+import { useFileDialog } from '@vueuse/core'
 import Excel from "exceljs";
 import { stringify as toToml } from 'smol-toml'
 import type { SongInfo, SongConfig } from '../types'
@@ -88,6 +89,8 @@ import {
     ElMessageBox,
     ElTag,
     ElPopover,
+    ElCollapse,
+    ElCollapseItem,
 } from 'element-plus'
 
 interface KeysInfo {
@@ -102,7 +105,6 @@ const props = defineProps<{
 }>()
 
 // Title Editor
-const [showHeaderEditor, toggleShowHeaderEditor] = useToggle(false)
 const selectedTitles = ref([...new Set(props.config.titles)])
 const unSelectedTitles = computed(() => {
     return (Object.keys(props.songInfoKeys).filter((key) => !new Set(selectedTitles.value).has(key as keyof SongInfo))) as (keyof SongInfo)[]

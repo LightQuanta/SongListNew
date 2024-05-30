@@ -8,8 +8,13 @@ import type { DropResult } from 'smooth-dnd';
 
 const emit = defineEmits(['onUpdateColumn'])
 
+interface KeysInfo {
+  default: string
+  description: string
+}
+
 const props = defineProps<{
-  titleAndDesc: Record<string, string>
+  songInfoKeys: Record<string, KeysInfo>,
 }>()
 
 const DEFAULT_CONFIG = {
@@ -20,13 +25,13 @@ const DEFAULT_CONFIG = {
 
 const songConfig = ref<SongConfig>({ ...DEFAULT_CONFIG })
 
-const selectedColumn = ref(Object.keys(props.titleAndDesc).map((key) => ({
+const selectedColumn = ref(Object.keys(props.songInfoKeys).map((key) => ({
   key,
   name: key,
   enable: true
 })))
 
-const editFlag = ref(Object.fromEntries(Object.keys(props.titleAndDesc).map((key) => [key, false])))
+const editFlag = ref(Object.fromEntries(Object.keys(props.songInfoKeys).map((key) => [key, false])))
 
 watch(songConfig, (value) => {
   selectedColumn.value = selectedColumn.value.map((item) => ({

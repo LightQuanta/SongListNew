@@ -5,18 +5,37 @@
         <el-button class="p-5 border" @click="columnEditor.openDialog(props.config)">
             打开歌单表头编辑器
         </el-button>
+        <el-button class="p-5 border" @click="toggleShowHeaderEditor()">Edit Head</el-button>
+        <!-- TODO 实现编辑列名，实现拖拽移动 -->
+        <div :class="`p-2 w-full mt-1 overflow-hidden transition-all h-${showHeaderEditor ? 15 : 0} border`">
+            <el-tag v-for="selected in selectedTitles" :key="selected" closable size="large" class="mx-1"
+                @close="selectedTitles.splice(selectedTitles.indexOf(selected), 1)">
+                {{ config.display_name[selected] }}
+            </el-tag>
+            <el-popover placement="bottom" :width="150" :visible="showAddTitle">
+                <template #reference>
+                    <el-button v-show="unSelectedTitles.length > 0" @click="showAddTitle = true">+ 添加</el-button>
+                </template>
+                <div class="flex flex-col flex-grow">
+                    <el-button text class="!ml-0" v-for="t in unSelectedTitles"
+                        @click="selectedTitles.push(t); showAddTitle = false">
+                        {{ config.display_name[t] }}
+                    </el-button>
+                </div>
+            </el-popover>
+        </div>
     </el-row>
     <table class="flex items-stretch flex-col w-full" v-loading="loading">
         <thead>
             <tr class="flex content-center sticky top-0">
-                <th class="flex-1" v-for="t in config.titles">
+                <th class="flex-1" v-for="t in selectedTitles">
                     {{ config.display_name[t] }}
                 </th>
             </tr>
         </thead>
         <tbody>
-            <tr class="flex content-center justify-center text-center" v-for="s in songs" :key="s.name">
-                <td class="flex-1" v-for="t in config.titles" :key="t">
+            <tr class="flex content-center justify-center text-center" v-for=" s  in  songs " :key="s.name">
+                <td class="flex-1" v-for="t in selectedTitles" :key="t">
                     {{ s[t] }}
                 </td>
             </tr>
@@ -44,23 +63,51 @@
         </el-row>
     </el-dialog>
     <edit-column @on-update-column="(config) => console.log(config)" ref="columnEditor"
-        :title-and-desc="titleTypesAndDesc" />
+        :song-info-keys="props.songInfoKeys" />
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { useFileDialog } from '@vueuse/core'
+import { useFileDialog, useToggle } from '@vueuse/core'
 import Excel from "exceljs";
 import { stringify as toToml } from 'smol-toml'
 import type { SongInfo, SongConfig } from '../types'
 import EditColumn from './EditorTable/EditColumn.vue'
 
 import 'element-plus/dist/index.css'
-import { ElDialog, ElButton, ElTable, ElTableColumn, ElSelect, ElOption, ElMessage, ElRow, ElLoading, ElMessageBox } from 'element-plus'
+import {
+    ElDialog,
+    ElButton,
+    ElTable,
+    ElTableColumn,
+    ElSelect,
+    ElOption,
+    ElMessage,
+    ElRow,
+    ElLoading,
+    ElMessageBox,
+    ElTag,
+    ElPopover,
+} from 'element-plus'
+
+interface KeysInfo {
+    default: string
+    description: string
+}
+
 
 const props = defineProps<{
-    config: SongConfig
+    config: SongConfig,
+    songInfoKeys: Record<keyof SongInfo, KeysInfo>,
 }>()
+
+// Title Editor
+const [showHeaderEditor, toggleShowHeaderEditor] = useToggle(false)
+const selectedTitles = ref([...new Set(props.config.titles)])
+const unSelectedTitles = computed(() => {
+    return (Object.keys(props.songInfoKeys).filter((key) => !new Set(selectedTitles.value).has(key as keyof SongInfo))) as (keyof SongInfo)[]
+})
+const showAddTitle = ref(false)
 
 const columnEditor = ref()
 
@@ -274,7 +321,7 @@ onChange(async (files) => {
         ).filter(s => s.name.trim() !== '') ?? []
 
         // 默认启用上传的表格中指定的列
-        props.config.titles = [...new Set(rowTitleData.value.filter(t => t.dataType !== 'ignore')
+        selectedTitles.value = [...new Set(rowTitleData.value.filter(t => t.dataType !== 'ignore')
             .sort((a, b) => a.id - b.id)
             .map(t => t.dataType)
             .map(t => {
@@ -293,7 +340,7 @@ onChange(async (files) => {
 // 将歌单导出为toml配置文件
 const exportToml = () => {
     const toml = toToml({
-        titles: props.config.titles,
+        titles: selectedTitles.value,
         display_name: props.config.display_name,
         songs: songs.value,
     })

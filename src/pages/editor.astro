@@ -1,6 +1,7 @@
 ---
 import EditorTable from "../components/EditorTable.vue";
 import config from "../config/songlist.ts";
+import { SongInfoKeys } from "../config/songlist.ts";
 ---
 
 <!doctype html>
@@ -12,6 +13,10 @@ import config from "../config/songlist.ts";
   </head>
   <body>
     {/* TODO 修改为正确的页面样式、渲染等 */}
-    <EditorTable config={config} client:only="vue" />
+    <EditorTable
+      config={config}
+      songInfoKeys={SongInfoKeys}
+      client:only="vue"
+    />
   </body>
 </html>

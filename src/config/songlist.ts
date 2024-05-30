@@ -2,19 +2,75 @@ import { parse as parseToml } from 'smol-toml'
 import { readFileSync } from 'fs'
 import { z } from 'zod'
 
+interface KeysInfo {
+    default: string
+    description: string
+}
+
+const SongInfoKeys: Record<keyof z.infer<typeof SongInfo>, KeysInfo> = {
+    id: {
+        default: '序号',
+        description: '歌曲序号',
+    },
+    name: {
+        default: '歌名',
+        description: '歌名',
+    },
+    artist: {
+        default: '原唱',
+        description: '原唱',
+    },
+    language: {
+        default: '语言',
+        description: '语言',
+    },
+    alias: {
+        default: '别名',
+        description: '歌曲别名',
+    },
+    tags: {
+        default: '标签',
+        description: '歌曲标签（可填写多个，用逗号或分号分隔）',
+    },
+    remark: {
+        default: '备注',
+        description: '歌曲备注',
+    },
+    paid: {
+        default: '付费',
+        description: '是否为付费歌曲',
+    },
+    top: {
+        default: '置顶',
+        description: '是否为置顶歌曲',
+    },
+    sc: {
+        default: 'SC',
+        description: '点歌需要该列标注金额的sc',
+    },
+    links: {
+        default: '链接',
+        description: '完整链接（如歌切等）',
+    },
+    date: {
+        default: '日期',
+        description: '该曲唱过的日期（可填写多个，用逗号或分号分隔）',
+    },
+}
+
 const DisplayName = z.object({
-    id: z.string().min(1).default('序号'),
-    name: z.string().min(1).default('歌名'),
-    artist: z.string().min(1).default('原唱'),
-    language: z.string().min(1).default('语种'),
-    alias: z.string().min(1).default('歌曲别名'),
-    tags: z.string().min(1).default('标签'),
-    remark: z.string().min(1).default('备注'),
-    paid: z.string().min(1).default('是否付费'),
-    top: z.string().min(1).default('是否置顶'),
-    sc: z.string().min(1).default('SC'),
-    date: z.string().min(1).default('日期'),
-    links: z.string().min(1).default('链接'),
+    id: z.string().min(1).default(SongInfoKeys.id.default),
+    name: z.string().min(1).default(SongInfoKeys.name.default),
+    artist: z.string().min(1).default(SongInfoKeys.artist.default),
+    language: z.string().min(1).default(SongInfoKeys.language.default),
+    alias: z.string().min(1).default(SongInfoKeys.alias.default),
+    tags: z.string().min(1).default(SongInfoKeys.tags.default),
+    remark: z.string().min(1).default(SongInfoKeys.remark.default),
+    paid: z.string().min(1).default(SongInfoKeys.paid.default),
+    top: z.string().min(1).default(SongInfoKeys.top.default),
+    sc: z.string().min(1).default(SongInfoKeys.sc.default),
+    date: z.string().min(1).default(SongInfoKeys.date.default),
+    links: z.string().min(1).default(SongInfoKeys.links.default),
 })
 
 const SongInfo = z.object({
@@ -42,4 +98,4 @@ const SongConfig = z.object({
 const config = SongConfig.parse(parseToml(readFileSync('src/config/default/songlist.toml', 'utf-8')))
 
 export default config
-export { SongInfo, SongConfig }
+export { SongInfo, SongInfoKeys, SongConfig }

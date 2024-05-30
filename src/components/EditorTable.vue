@@ -2,28 +2,31 @@
     <el-row class="m-4">
         <el-button class="p-5 border" @click="open()" type="primary">上传xlsx</el-button>
         <el-button class="p-5 border" @click="exportToml()" v-if="songs.length > 0">导出toml格式歌单信息</el-button>
-        <el-button class="p-5 border" @click="columnEditor.openDialog(props.config)">
-            打开歌单表头编辑器
-        </el-button>
     </el-row>
     <el-collapse class="mx-4">
         <el-collapse-item title="Head Editor">
-            <!-- TODO 实现编辑列名，实现拖拽移动 -->
-            <el-tag v-for="selected in selectedTitles" :key="selected" closable size="large" class="mx-1"
-                @close="selectedTitles.splice(selectedTitles.indexOf(selected), 1)">
-                {{ config.display_name[selected] }}
-            </el-tag>
-            <el-popover placement="bottom" :width="150" :visible="showAddTitle">
-                <template #reference>
-                    <el-button v-show="unSelectedTitles.length > 0" @click="showAddTitle = !showAddTitle">+ 添加</el-button>
-                </template>
-                <div class="flex flex-col flex-grow">
-                    <el-button text class="!ml-0" v-for="t in unSelectedTitles"
-                        @click="selectedTitles.push(t); showAddTitle = false">
-                        {{ config.display_name[t] }}
-                    </el-button>
-                </div>
-            </el-popover>
+            <!-- TODO 实现编辑列名 -->
+            <Container class="flex gap-2" orientation="horizontal" :drop="onDrop" lock-axis="x"
+                drag-handle-selector=".editor-head-drag-item">
+                <Draggable v-for="selected in selectedTitles" :key="selected">
+                    <el-tag closable size="large" class="mx-1 editor-head-drag-item"
+                        @close="selectedTitles.splice(selectedTitles.indexOf(selected), 1)">
+                        {{ config.display_name[selected] }}
+                    </el-tag>
+                </Draggable>
+                <el-popover placement="bottom" :width="150" :visible="showAddTitle">
+                    <template #reference>
+                        <el-button v-show="unSelectedTitles.length > 0" @click="showAddTitle = !showAddTitle">+
+                            添加</el-button>
+                    </template>
+                    <div class="flex flex-col flex-grow">
+                        <el-button text class="!ml-0" v-for="t in unSelectedTitles"
+                            @click="selectedTitles.push(t); showAddTitle = false">
+                            {{ config.display_name[t] }}
+                        </el-button>
+                    </div>
+                </el-popover>
+            </Container>
         </el-collapse-item>
     </el-collapse>
     <table class="flex items-stretch flex-col w-full" v-loading="loading">
@@ -35,7 +38,7 @@
             </tr>
         </thead>
         <tbody>
-            <tr class="flex content-center justify-center text-center" v-for=" s  in  songs " :key="s.name">
+            <tr class="flex content-center justify-center text-center" v-for=" s in songs " :key="s.name">
                 <td class="flex-1" v-for="t in selectedTitles" :key="t">
                     {{ s[t] }}
                 </td>
@@ -63,8 +66,6 @@
             <el-button @click="verifyTypes" type="primary">确定</el-button>
         </el-row>
     </el-dialog>
-    <edit-column @on-update-column="(config) => console.log(config)" ref="columnEditor"
-        :song-info-keys="props.songInfoKeys" />
 </template>
 
 <script setup lang="ts">
@@ -73,7 +74,8 @@ import { useFileDialog } from '@vueuse/core'
 import Excel from "exceljs";
 import { stringify as toToml } from 'smol-toml'
 import type { SongInfo, SongConfig } from '../types'
-import EditColumn from './EditorTable/EditColumn.vue'
+import { Draggable, Container } from '../components/Draggable'
+import type { DropResult } from 'smooth-dnd'
 
 import 'element-plus/dist/index.css'
 import {
@@ -98,7 +100,6 @@ interface KeysInfo {
     description: string
 }
 
-
 const props = defineProps<{
     config: SongConfig,
     songInfoKeys: Record<keyof SongInfo, KeysInfo>,
@@ -111,7 +112,32 @@ const unSelectedTitles = computed(() => {
 })
 const showAddTitle = ref(false)
 
+const applyDrag = (arr: any[], dragResult: DropResult) => {
+    const { removedIndex, addedIndex, payload } = dragResult
+    if (removedIndex === null && addedIndex === null) return arr
+
+    const result = [...arr]
+    let itemToAdd = payload
+
+    if (removedIndex !== null) {
+        itemToAdd = result.splice(removedIndex, 1)[0]
+    }
+
+    if (addedIndex !== null) {
+        result.splice(addedIndex, 0, itemToAdd)
+    }
+
+    return result
+}
+
+// drop trigger
+const onDrop = (dropResult: DropResult) => {
+    selectedTitles.value = applyDrag(selectedTitles.value, dropResult)
+}
+
 const columnEditor = ref()
+
+// open xlsx
 
 const { open: openFileDialog, onChange } = useFileDialog({
     multiple: false,

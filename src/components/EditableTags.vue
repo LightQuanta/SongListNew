@@ -4,10 +4,10 @@ import { Container, Draggable } from './Draggable';
 import { ref } from 'vue'
 import type { DropResult } from "smooth-dnd";
 
-const tags = defineModel<string[]>({ required: true })
+const tags = defineModel<string[]>()
 
 const onDrop = (dropResult: DropResult) => {
-  tags.value = applyDrag(tags.value, dropResult)
+  tags.value = applyDrag(tags.value ?? [], dropResult)
 }
 
 const applyDrag = (arr: any[], dragResult: DropResult) => {
@@ -33,9 +33,22 @@ const inputNewText = () => {
   if (newText.value?.trim() === '') return
   const text = newText.value.trim()
 
-  tags.value.push(text)
-  tags.value = [...new Set(tags.value)]
+  if (tags.value == undefined) {
+    tags.value = []
+  }
+
+  // 防止响应式变量未更新导致NPE
+  setImmediate(() => {
+    tags.value?.push(text)
+    tags.value = [...new Set(tags.value)]
+  })
+
   newText.value = ''
+}
+
+const removeTag = (index: number) => {
+  tags.value!.splice(index, 1)
+  if (tags.value!.length === 0) tags.value = undefined
 }
 
 </script>
@@ -52,13 +65,13 @@ const inputNewText = () => {
             trigger="click"
         >
           <el-input
-              v-model="tags[index]"
+              v-model="tags![index]"
               clearable
               placeholder="请输入新名称"
           />
           <template #reference>
             <el-tag class="mx-1 editor-head-drag-item cursor-grab" closable size="large"
-                    @close="tags.splice(tags.indexOf(t), 1)">
+                    @close="removeTag(index)">
               {{ t }}
             </el-tag>
           </template>

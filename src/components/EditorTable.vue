@@ -4,8 +4,8 @@
     <el-button class="p-5 border" @click="exportToml()" v-if="songs.length > 0">导出toml格式歌单信息</el-button>
   </el-row>
   <el-collapse class="mx-4">
-    <el-collapse-item title="编辑表格展示列">
-      <!-- TODO 同步selectedTitles -->
+    <el-collapse-item title="编辑标题">
+      <p>点击标签编辑标题</p>
       <EditableTagsWithDisplayName v-model:display-name="displayName"
                                    v-model:selected-keys="selectedTitles"
                                    content-editable

@@ -6,10 +6,9 @@
   <el-collapse class="mx-4">
     <el-collapse-item title="编辑表格展示列">
       <!-- TODO 同步selectedTitles -->
-      <EditableTags :selected-keys="selectedTitles"
-                    :keys-info="Object.keys(props.songInfoKeys).map((item) => ({ key: item, name: config.display_name[item] as string }))"
-                    :all-keys="Object.keys(config.display_name)"
-                    @selected-keys-changed="selectedTitles = $event"
+      <EditableTagsWithDisplayName v-model:display-name="displayName"
+                                   v-model:selected-keys="selectedTitles"
+                                   content-editable
       />
     </el-collapse-item>
   </el-collapse>
@@ -17,14 +16,14 @@
     <thead>
     <tr class="flex content-center sticky top-0">
       <th class="flex-1" v-for="t in selectedTitles">
-        {{ config.display_name[t] }}
+        {{ displayName[t] }}
       </th>
     </tr>
     </thead>
     <tbody>
     <tr class="flex content-center justify-center text-center" v-for="s in songs" :key="s.name">
       <td class="flex-1 flex justify-center" v-for="t in selectedTitles" :key="t">
-        <EditableTags v-if="tags.has(t)" :selected-keys="s[t]"/>
+        <EditableTags v-if="tags.has(t)" v-model="s[t]"/>
         <div v-else>{{ s[t] }}</div>
       </td>
     </tr>
@@ -41,19 +40,13 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { stringify as toToml } from 'smol-toml'
-import type { SongInfo, SongConfig } from '../types'
+import type { SongConfig, SongInfo } from '../types'
 import EditableTags from "./EditableTags.vue";
+import EditableTagsWithDisplayName from "./EditableTagsWithDisplayName.vue";
 import XlsxImportDialog from "./XlsxImportDialog.vue";
 
 import 'element-plus/dist/index.css'
-import {
-  ElButton,
-  ElRow,
-  ElLoading,
-  ElMessageBox,
-  ElCollapse,
-  ElCollapseItem,
-} from 'element-plus'
+import { ElButton, ElCollapse, ElCollapseItem, ElLoading, ElMessageBox, ElRow, } from 'element-plus'
 
 const tags = new Set(['tags'])
 
@@ -68,6 +61,7 @@ const props = defineProps<{
 }>()
 
 const selectedTitles = ref([...new Set(props.config.titles)])
+const displayName = ref(props.config.display_name)
 
 // Xlsx Import
 const xlsxImportDialogRef = ref<InstanceType<typeof XlsxImportDialog>>()
@@ -112,7 +106,7 @@ watch(loading, (value) => {
 const exportToml = () => {
   const toml = toToml({
     titles: selectedTitles.value,
-    display_name: props.config.display_name,
+    display_name: displayName.value,
     songs: songs.value,
   })
   const blob = new Blob([toml], { type: 'text/plain;charset=utf-8' })

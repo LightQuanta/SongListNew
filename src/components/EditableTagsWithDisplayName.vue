@@ -1,13 +1,19 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import { ElButton, ElInput, ElPopover, ElTag } from 'element-plus';
 import { Container, Draggable } from './Draggable';
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import type { DropResult } from "smooth-dnd";
 
-const tags = defineModel<string[]>({ required: true })
+const selectedTitles = defineModel<string[]>('selectedKeys', { required: true })
+const keyDisplayName = defineModel<Record<string, string>>('displayName', { required: true })
+
+const unSelectedTitles = computed(() => {
+  return (Object.keys(keyDisplayName.value).filter((key) => !new Set(selectedTitles.value).has(key)))
+})
+const showAddTitle = ref(false)
 
 const onDrop = (dropResult: DropResult) => {
-  tags.value = applyDrag(tags.value, dropResult)
+  selectedTitles.value = applyDrag(selectedTitles.value, dropResult)
 }
 
 const applyDrag = (arr: any[], dragResult: DropResult) => {
@@ -27,24 +33,14 @@ const applyDrag = (arr: any[], dragResult: DropResult) => {
 
   return result
 }
-const newText = ref<string>('')
-
-const inputNewText = () => {
-  if (newText.value?.trim() === '') return
-  const text = newText.value.trim()
-
-  tags.value.push(text)
-  tags.value = [...new Set(tags.value)]
-  newText.value = ''
-}
 
 </script>
 
 <template>
-  <Container class="flex gap-2" orientation="horizontal" :drop="onDrop" lock-axis="x"
-             drag-handle-selector=".editor-head-drag-item">
+  <Container :drop="onDrop" class="flex gap-2" drag-handle-selector=".editor-head-drag-item" lock-axis="x"
+             orientation="horizontal">
     <transition-group name="tags">
-      <Draggable v-for="(t, index) in tags">
+      <Draggable v-for="t in selectedTitles" :key="t">
         <el-popover
             :width="200"
             placement="bottom"
@@ -52,30 +48,28 @@ const inputNewText = () => {
             trigger="click"
         >
           <el-input
-              v-model="tags[index]"
+              v-model="keyDisplayName[t]"
               clearable
-              placeholder="请输入新名称"
+              placeholder="Please input"
           />
           <template #reference>
             <el-tag class="mx-1 editor-head-drag-item cursor-grab" closable size="large"
-                    @close="tags.splice(tags.indexOf(t), 1)">
-              {{ t }}
+                    @close="selectedTitles.splice(selectedTitles.indexOf(t), 1)">
+              {{ `${keyDisplayName[t]} (${t})` }}
             </el-tag>
           </template>
         </el-popover>
       </Draggable>
-      <!-- TODO 实现按钮动画 -->
-      <el-popover :width="200" class="absolute" placement="bottom" trigger="click">
-        <el-input
-            v-model="newText"
-            clearable
-            placeholder="输入新标签名称"
-            @keydown.enter="inputNewText"
-        />
-        <el-button class="w-full mt-2" type="primary" @click="inputNewText">添加</el-button>
+      <el-popover :visible="showAddTitle" :width="150" class="absolute" placement="bottom">
         <template #reference>
-          <el-button>+</el-button>
+          <el-button v-show="unSelectedTitles.length > 0" @click="showAddTitle = !showAddTitle">+</el-button>
         </template>
+        <div class="flex flex-col flex-grow">
+          <el-button v-for="t in unSelectedTitles" class="!ml-0" text
+                     @click="selectedTitles.push(t); showAddTitle = false">
+            {{ `${keyDisplayName[t]} (${t})` }}
+          </el-button>
+        </div>
       </el-popover>
     </transition-group>
   </Container>

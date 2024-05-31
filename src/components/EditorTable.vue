@@ -124,7 +124,14 @@ const exportToml = () => {
   const toml = toToml({
     titles: selectedTitles.value,
     display_name: displayName.value,
-    songs: songs.value,
+    songs: songs.value.map(s => {
+      for (const prop in s) {
+        if (s[prop as keyof SongInfo] instanceof Array && (s[prop as keyof SongInfo] as Array<any>).length === 0) {
+          delete s[prop as keyof SongInfo]
+        }
+      }
+      return s
+    }),
   })
   const blob = new Blob([toml], { type: 'text/plain;charset=utf-8' })
   const url = URL.createObjectURL(blob)

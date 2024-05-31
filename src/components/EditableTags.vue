@@ -65,26 +65,46 @@ watch(selectedTitles, (value) => {
 <template>
   <Container class="flex gap-2" orientation="horizontal" :drop="onDrop" lock-axis="x"
              drag-handle-selector=".editor-head-drag-item">
-    <Draggable v-for="t in selectedTitles" :key="t">
-      <!-- TODO 实现文本内容编辑 -->
-      <el-tag closable size="large" class="mx-1 editor-head-drag-item cursor-grab"
-              @close="selectedTitles.splice(selectedTitles.indexOf(t), 1)">
-        {{ getDisplayName(t) }}
-      </el-tag>
-    </Draggable>
-    <!-- TODO 实现文本内容添加 -->
-    <el-popover v-if="hasAllKeys" placement="bottom" :width="150" :visible="showAddTitle">
-      <template #reference>
-        <el-button v-show="unSelectedTitles.length > 0" @click="showAddTitle = !showAddTitle">
-          + 添加
-        </el-button>
-      </template>
-      <div class="flex flex-col flex-grow">
-        <el-button text class="!ml-0" v-for="t in unSelectedTitles"
-                   @click="selectedTitles.push(t); showAddTitle = false">
+    <transition-group name="tags">
+      <Draggable v-for="t in selectedTitles" :key="t">
+        <!-- TODO 实现文本内容编辑 -->
+        <el-tag closable size="large" class="mx-1 editor-head-drag-item cursor-grab"
+                @close="selectedTitles.splice(selectedTitles.indexOf(t), 1)">
           {{ getDisplayName(t) }}
-        </el-button>
-      </div>
-    </el-popover>
+        </el-tag>
+      </Draggable>
+      <!-- TODO 实现文本内容添加，实现按钮动画 -->
+      <el-popover class="absolute" v-if="hasAllKeys" placement="bottom" :width="150" :visible="showAddTitle">
+        <template #reference>
+          <el-button v-show="unSelectedTitles.length > 0" @click="showAddTitle = !showAddTitle">
+            + 添加
+          </el-button>
+        </template>
+        <div class="flex flex-col flex-grow">
+          <el-button text class="!ml-0" v-for="t in unSelectedTitles"
+                     @click="selectedTitles.push(t); showAddTitle = false">
+            {{ getDisplayName(t) }}
+          </el-button>
+        </div>
+      </el-popover>
+    </transition-group>
   </Container>
 </template>
+
+<style scoped>
+.tags-move,
+.tags-enter-active,
+.tags-leave-active {
+  transition: all .5s ease;
+}
+
+.tags-enter-from,
+.tags-leave-to {
+  opacity: 0;
+  transform: translateY(-30px);
+}
+
+.tags-leave-active {
+  position: absolute;
+}
+</style>

@@ -4,7 +4,8 @@
     <el-button class="p-5 border" @click="exportToml()" v-if="songs.length > 0">导出toml格式歌单信息</el-button>
   </el-row>
   <el-collapse class="mx-4">
-    <el-collapse-item title="Head Editor">
+    <el-collapse-item title="编辑表格展示列">
+      <!-- TODO 同步selectedTitles -->
       <EditableTags :selected-keys="selectedTitles"
                     :keys-info="Object.keys(props.songInfoKeys).map((item) => ({ key: item, name: config.display_name[item] as string }))"
                     :all-keys="Object.keys(config.display_name)"
@@ -22,8 +23,9 @@
     </thead>
     <tbody>
     <tr class="flex content-center justify-center text-center" v-for="s in songs" :key="s.name">
-      <td class="flex-1" v-for="t in selectedTitles" :key="t">
-        {{ s[t] }}
+      <td class="flex-1 flex justify-center" v-for="t in selectedTitles" :key="t">
+        <EditableTags v-if="tags.has(t)" :selected-keys="s[t]"/>
+        <div v-else>{{ s[t] }}</div>
       </td>
     </tr>
     </tbody>
@@ -52,6 +54,8 @@ import {
   ElCollapse,
   ElCollapseItem,
 } from 'element-plus'
+
+const tags = new Set(['tags'])
 
 interface KeysInfo {
   default: string

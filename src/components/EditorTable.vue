@@ -5,14 +5,22 @@
   </el-row>
   <el-collapse class="mx-4">
     <el-collapse-item title="编辑标题">
-      <p>点击标签编辑标题</p>
+      <p>点击标签编辑标题，长按拖动</p>
       <EditableTagsWithDisplayName v-model:display-name="displayName"
                                    v-model:selected-keys="selectedTitles"
                                    content-editable
       />
     </el-collapse-item>
   </el-collapse>
-  <table class="flex items-stretch flex-col w-full" v-loading="loading">
+  <!-- TODO 解决性能问题 -->
+  <el-table :data="songs" stripe>
+    <el-table-column v-for="t in selectedTitles" :key="t" :label="displayName[t]" :prop="t">
+      <template v-if="tags.has(t)" #default="scope">
+        <EditableTags v-model="songs[scope.$index][t]"/>
+      </template>
+    </el-table-column>
+  </el-table>
+  <!--table class="flex items-stretch flex-col w-full" v-loading="loading">
     <thead>
     <tr class="flex content-center sticky top-0">
       <th class="flex-1" v-for="t in selectedTitles">
@@ -28,7 +36,7 @@
       </td>
     </tr>
     </tbody>
-  </table>
+  </table -->
   <!-- Xlsx Import -->
   <XlsxImportDialog ref="xlsxImportDialogRef"
                     @update-songs="updateSongsAndTitles"
@@ -46,7 +54,16 @@ import EditableTagsWithDisplayName from "./EditableTagsWithDisplayName.vue";
 import XlsxImportDialog from "./XlsxImportDialog.vue";
 
 import 'element-plus/dist/index.css'
-import { ElButton, ElCollapse, ElCollapseItem, ElLoading, ElMessageBox, ElRow, } from 'element-plus'
+import {
+  ElButton,
+  ElCollapse,
+  ElCollapseItem,
+  ElLoading,
+  ElMessageBox,
+  ElRow,
+  ElTable,
+  ElTableColumn,
+} from 'element-plus'
 
 const tags = new Set(['tags'])
 

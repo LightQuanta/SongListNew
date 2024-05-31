@@ -6,6 +6,10 @@ import type { DropResult } from "smooth-dnd";
 
 const tags = defineModel<string[]>()
 
+if (tags.value == undefined) {
+  tags.value = []
+}
+
 const onDrop = (dropResult: DropResult) => {
   tags.value = applyDrag(tags.value ?? [], dropResult)
 }
@@ -33,15 +37,9 @@ const inputNewText = () => {
   if (newText.value?.trim() === '') return
   const text = newText.value.trim()
 
-  if (tags.value == undefined) {
-    tags.value = []
-  }
-
-  // 防止响应式变量未更新导致NPE
-  setImmediate(() => {
-    tags.value?.push(text)
-    tags.value = [...new Set(tags.value)]
-  })
+  tags.value = Array.from(
+    new Set([...(tags.value || []), text])
+  )
 
   newText.value = ''
 }
@@ -55,23 +53,13 @@ const removeTag = (index: number) => {
 
 <template>
   <Container class="flex gap-2" orientation="horizontal" :drop="onDrop" lock-axis="x"
-             drag-handle-selector=".editor-head-drag-item">
+    drag-handle-selector=".editor-head-drag-item">
     <transition-group name="tags">
       <Draggable v-for="(t, index) in tags">
-        <el-popover
-            :width="200"
-            placement="bottom"
-            title="编辑内容"
-            trigger="click"
-        >
-          <el-input
-              v-model="tags![index]"
-              clearable
-              placeholder="请输入新名称"
-          />
+        <el-popover :width="200" placement="bottom" title="编辑内容" trigger="click">
+          <el-input v-model="tags![index]" clearable placeholder="请输入新名称" />
           <template #reference>
-            <el-tag class="mx-1 editor-head-drag-item cursor-grab" closable size="large"
-                    @close="removeTag(index)">
+            <el-tag class="mx-1 editor-head-drag-item cursor-grab" closable size="large" @close="removeTag(index)">
               {{ t }}
             </el-tag>
           </template>
@@ -79,12 +67,7 @@ const removeTag = (index: number) => {
       </Draggable>
       <!-- TODO 实现按钮动画 -->
       <el-popover :width="200" class="absolute" placement="bottom" trigger="click">
-        <el-input
-            v-model="newText"
-            clearable
-            placeholder="输入新标签名称"
-            @keydown.enter="inputNewText"
-        />
+        <el-input v-model="newText" clearable placeholder="输入新标签名称" />
         <el-button class="w-full mt-2" type="primary" @click="inputNewText">添加</el-button>
         <template #reference>
           <el-button>+</el-button>

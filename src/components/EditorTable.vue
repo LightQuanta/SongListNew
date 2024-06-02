@@ -13,12 +13,22 @@
     </el-collapse-item>
   </el-collapse>
   <!-- TODO 解决性能问题 -->
-  <el-table :data="songs" stripe>
-    <el-table-column v-for="t in selectedTitles" :key="t" :label="displayName[t]" :prop="t">
-      <template v-if="tags.has(t)" #default="scope">
-        <EditableTags v-model="songs[scope.$index][t]"/>
-      </template>
-    </el-table-column>
+  <el-table ref="tableRef" :data="songs" stripe>
+    <template v-for="title in selectedTitles" :key="title">
+      <!-- 带筛选的tag列 -->
+      <el-table-column v-if="tags.has(title)"
+                       :filter-method="filterTag"
+                       :filters="allTags"
+                       :label="displayName[title]"
+                       :prop="title"
+      >
+        <template #default="scope">
+          <EditableTags v-model="scope.row[title]"/>
+        </template>
+      </el-table-column>
+      <!-- 普通列 -->
+      <el-table-column v-else :label="displayName[title]" :prop="title"/>
+    </template>
   </el-table>
   <!--table class="flex items-stretch flex-col w-full" v-loading="loading">
     <thead>
@@ -46,7 +56,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { stringify as toToml } from 'smol-toml'
 import type { SongConfig, SongInfo } from '../types'
 import EditableTags from "./EditableTags.vue";
@@ -63,6 +73,7 @@ import {
   ElRow,
   ElTable,
   ElTableColumn,
+  type TableColumnCtx,
 } from 'element-plus'
 
 const tags = new Set(['tags'])
@@ -142,4 +153,32 @@ const exportToml = () => {
 }
 
 const songs = ref<SongInfo[]>(props.config.songs)
+
+// 表格筛选处理
+const tableRef = ref<InstanceType<typeof ElTable>>()
+watch(songs, () => tableRef.value!.clearFilter())
+
+const allTags = computed(() => {
+  const t = new Set<string>()
+  for (const s of songs.value) {
+    for (const key in s) {
+      if (tags.has(key)) {
+        (s[key as keyof SongInfo] as string[]).forEach(str => t.add(str))
+      }
+    }
+  }
+  console.log([...t].map(t => ({ text: t, value: t })))
+  return [...t].map(t => ({ text: t, value: t }))
+})
+
+const filterTag = (
+    _: string,    // 这玩意有啥用？
+    row: SongInfo,
+    column: TableColumnCtx<SongInfo>
+) => {
+  const selected = column.filteredValue
+  if (selected.length === 0) return true
+
+  return selected.every(t => row.tags?.includes(t) ?? false)
+}
 </script>

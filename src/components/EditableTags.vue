@@ -48,10 +48,7 @@ const inputNewText = () => {
   newText.value = ''
 }
 
-const removeTag = (index: number) => {
-  tags.value!.splice(index, 1)
-  if (tags.value!.length === 0) tags.value = undefined
-}
+const removeTag = (index: number) => tags.value!.splice(index, 1)
 
 // TODO fuse集成
 const getSuggestions = (queryString: string, cb: any) => {
@@ -61,7 +58,6 @@ const getSuggestions = (queryString: string, cb: any) => {
   cb(results?.map(r => ({ value: r })))
 }
 
-// TODO 为什么没有用？
 const addSuggestionTag = (item: Record<string, any>) => {
   newText.value = item.value
   setImmediate(inputNewText)
@@ -77,7 +73,6 @@ const addSuggestionTag = (item: Record<string, any>) => {
         <el-popover :width="200" placement="bottom" title="编辑内容" trigger="click">
           <el-autocomplete v-model="tags![index]" :fetch-suggestions="getSuggestions" clearable
                            placeholder="请输入新名称"
-                           @select="addSuggestionTag"
           />
           <template #reference>
             <el-tag class="mx-1 editor-head-drag-item cursor-grab" closable size="large" @close="removeTag(index)">
@@ -89,7 +84,9 @@ const addSuggestionTag = (item: Record<string, any>) => {
       <!-- TODO 实现按钮动画 -->
       <el-popover :width="200" class="absolute" placement="bottom" trigger="click">
         <el-autocomplete v-model="newText" :fetch-suggestions="getSuggestions" clearable placeholder="输入新标签名称"
-                         placement="top"/>
+                         placement="top"
+                         @select="addSuggestionTag"
+        />
         <el-button class="w-full mt-2" type="primary" @click="inputNewText">添加</el-button>
         <template #reference>
           <el-button>+</el-button>

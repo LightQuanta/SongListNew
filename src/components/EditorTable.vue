@@ -15,19 +15,17 @@
   <!-- TODO 解决性能问题 -->
   <el-table ref="tableRef" :data="songs" stripe>
     <template v-for="title in selectedTitles" :key="title">
-      <!-- 带筛选的tag列 -->
-      <el-table-column v-if="tags.has(title)"
-                       :filter-method="filterTag"
-                       :filters="allTags"
-                       :label="displayName[title]"
-                       :prop="title"
+      <el-table-column
+          :filter-method="filterableColumns.has(title) ? filterColumn : (tagColumns.has(title) ? filterTag : undefined)"
+          :filters="filterableColumns.has(title) ? [...allFilterableColumns.get(title)].map(c => ({ text: c, value: c })) : (tagColumns.has(title)? allTags: undefined)"
+          :label="displayName[title]"
+          :prop="title"
+          :sortable="sortableColumns.has(title)"
       >
-        <template #default="scope">
+        <template v-if="tagColumns.has(title)" #default="scope">
           <EditableTags v-model="scope.row[title]"/>
         </template>
       </el-table-column>
-      <!-- 普通列 -->
-      <el-table-column v-else :label="displayName[title]" :prop="title"/>
     </template>
   </el-table>
   <!--table class="flex items-stretch flex-col w-full" v-loading="loading">
@@ -75,8 +73,6 @@ import {
   ElTableColumn,
   type TableColumnCtx,
 } from 'element-plus'
-
-const tags = new Set(['tags'])
 
 interface KeysInfo {
   default: string
@@ -155,6 +151,10 @@ const exportToml = () => {
 const songs = ref<SongInfo[]>(props.config.songs)
 
 // 表格筛选处理
+const tagColumns = new Set(['tags'])
+const sortableColumns = new Set(['id', 'name', 'artist', 'language', 'paid', 'top', 'sc'])
+const filterableColumns = new Set(['artist', 'language', 'paid', 'top', 'sc'])
+
 const tableRef = ref<InstanceType<typeof ElTable>>()
 watch(songs, () => tableRef.value!.clearFilter())
 
@@ -162,13 +162,28 @@ const allTags = computed(() => {
   const t = new Set<string>()
   for (const s of songs.value) {
     for (const key in s) {
-      if (tags.has(key)) {
+      if (tagColumns.has(key)) {
         (s[key as keyof SongInfo] as string[]).forEach(str => t.add(str))
       }
     }
   }
-  console.log([...t].map(t => ({ text: t, value: t })))
   return [...t].map(t => ({ text: t, value: t }))
+})
+
+const allFilterableColumns = computed(() => {
+  const map = new Map<string, Set<string>>()
+  for (const song of songs.value) {
+    for (const key in song) {
+      if (filterableColumns.has(key)) {
+        if (!map.has(key)) {
+          map.set(key, new Set([song[key as keyof SongInfo] as string]))
+        } else {
+          (map.get(key) as Set<string>).add(song[key as keyof SongInfo] as string)
+        }
+      }
+    }
+  }
+  return map
 })
 
 const filterTag = (
@@ -179,6 +194,14 @@ const filterTag = (
   const selected = column.filteredValue
   if (selected.length === 0) return true
 
+  // TODO 交集还是并集，这是个问题
+  // return selected.some(t => row.tags?.includes(t) ?? false)
   return selected.every(t => row.tags?.includes(t) ?? false)
 }
+
+const filterColumn = (
+    _: string,
+    row: SongInfo,
+    column: TableColumnCtx<SongInfo>
+) => column.filteredValue.some(v => v === row[column.property as keyof SongInfo])
 </script>

@@ -16,8 +16,8 @@
   <el-table ref="tableRef" :data="songs" stripe>
     <template v-for="title in selectedTitles" :key="title">
       <el-table-column
-          :filter-method="filterableColumns.has(title) ? filterColumn : (tagColumns.has(title) ? filterTag : undefined)"
-          :filters="filterableColumns.has(title) ? [...allFilterableColumns.get(title)].map(c => ({ text: c, value: c })) : (tagColumns.has(title)? allTags: undefined)"
+          :filter-method="getFilterMethod(title)"
+          :filters="getFilters(title)"
           :label="displayName[title]"
           :prop="title"
           :sortable="sortableColumns.has(title)"
@@ -158,28 +158,43 @@ const filterableColumns = new Set(['artist', 'language', 'paid', 'top', 'sc'])
 const tableRef = ref<InstanceType<typeof ElTable>>()
 watch(songs, () => tableRef.value!.clearFilter())
 
+const getFilterMethod = (title: keyof SongInfo) => filterableColumns.has(title) ? filterColumn : (tagColumns.has(title) ? filterTag : undefined)
+const getFilters = (title: keyof SongInfo) => {
+  if (filterableColumns.has(title)) {
+    return [...allFilterableColumns.value.get(title)!].map(c => ({
+      text: c,
+      value: c
+    }))
+  }
+  if (tagColumns.has(title)) {
+    return allTags.value
+  }
+  return undefined
+}
+
+
 const allTags = computed(() => {
-  const t = new Set<string>()
+  const tags = new Set<string>()
   for (const s of songs.value) {
     for (const key in s) {
       if (tagColumns.has(key)) {
-        (s[key as keyof SongInfo] as string[]).forEach(str => t.add(str))
+        (s[key as keyof SongInfo] as string[]).forEach(str => tags.add(str))
       }
     }
   }
-  return [...t].map(t => ({ text: t, value: t }))
+  return [...tags].map(t => ({ text: t, value: t }))
 })
 
 const allFilterableColumns = computed(() => {
   const map = new Map<string, Set<string>>()
   for (const song of songs.value) {
     for (const key in song) {
-      if (filterableColumns.has(key)) {
-        if (!map.has(key)) {
-          map.set(key, new Set([song[key as keyof SongInfo] as string]))
-        } else {
-          (map.get(key) as Set<string>).add(song[key as keyof SongInfo] as string)
-        }
+      if (!filterableColumns.has(key)) continue
+
+      if (!map.has(key)) {
+        map.set(key, new Set([song[key as keyof SongInfo] as string]))
+      } else {
+        map.get(key)!.add(song[key as keyof SongInfo] as string)
       }
     }
   }

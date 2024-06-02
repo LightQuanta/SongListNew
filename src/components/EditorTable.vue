@@ -23,7 +23,7 @@
           :sortable="sortableColumns.has(title)"
       >
         <template v-if="tagColumns.has(title)" #default="scope">
-          <EditableTags v-model="scope.row[title]"/>
+          <EditableTags v-model="scope.row[title]" :suggestions="allTagsText"/>
         </template>
       </el-table-column>
     </template>
@@ -183,6 +183,10 @@ const allTags = computed(() => {
     }
   }
   return [...tags].map(t => ({ text: t, value: t }))
+})
+
+const allTagsText = computed(() => {
+  return allTags.value.map(t => t.text)
 })
 
 const allFilterableColumns = computed(() => {

@@ -6,14 +6,12 @@
   <el-collapse class="mx-4">
     <el-collapse-item title="编辑标题">
       <p>点击标签编辑标题，长按拖动</p>
-      <EditableTagsWithDisplayName v-model:display-name="displayName"
-                                   v-model:selected-keys="selectedTitles"
-                                   content-editable
-      />
+      <EditableTagsWithDisplayName v-model:display-name="displayName" v-model:selected-keys="selectedTitles"
+        content-editable />
     </el-collapse-item>
   </el-collapse>
   <!-- TODO 解决性能问题 -->
-  <el-table ref="tableRef" :data="songs" stripe>
+  <!-- <el-table ref="tableRef" :data="songs" stripe>
     <template v-for="title in selectedTitles" :key="title">
       <el-table-column
           :filter-method="getFilterMethod(title)"
@@ -25,35 +23,16 @@
         <template v-if="tagColumns.has(title)" #default="scope">
           <EditableTags v-model="scope.row[title]" :suggestions="allTagsText"/>
         </template>
-      </el-table-column>
-    </template>
-  </el-table>
-  <!--table class="flex items-stretch flex-col w-full" v-loading="loading">
-    <thead>
-    <tr class="flex content-center sticky top-0">
-      <th class="flex-1" v-for="t in selectedTitles">
-        {{ displayName[t] }}
-      </th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr class="flex content-center justify-center text-center" v-for="s in songs" :key="s.name">
-      <td class="flex-1 flex justify-center" v-for="t in selectedTitles" :key="t">
-        <EditableTags v-if="tags.has(t)" v-model="s[t]"/>
-        <div v-else>{{ s[t] }}</div>
-      </td>
-    </tr>
-    </tbody>
-  </table -->
+</el-table-column>
+</template>
+</el-table> -->
+  <el-table-v2 ref="tableRef" :data="songs" :columns="columns" stripe :width="1680" :height="800" />
   <!-- Xlsx Import -->
-  <XlsxImportDialog ref="xlsxImportDialogRef"
-                    @update-songs="updateSongsAndTitles"
-                    @dialog-close="loading = false"
-                    @start-processing="loading = true"
-  />
+  <XlsxImportDialog ref="xlsxImportDialogRef" @update-songs="updateSongsAndTitles" @dialog-close="loading = false"
+    @start-processing="loading = true" />
 </template>
 
-<script setup lang="ts">
+<script setup lang="tsx">
 import { computed, ref, watch } from 'vue'
 import { stringify as toToml } from 'smol-toml'
 import type { SongConfig, SongInfo } from '../types'
@@ -71,7 +50,9 @@ import {
   ElRow,
   ElTable,
   ElTableColumn,
+  ElTableV2,
   type TableColumnCtx,
+  type Column
 } from 'element-plus'
 
 interface KeysInfo {
@@ -150,13 +131,31 @@ const exportToml = () => {
 
 const songs = ref<SongInfo[]>(props.config.songs)
 
+const tagRenderer = (data: any, suggestions: string[]) =>
+  <EditableTags v-model={data} suggestions={suggestions} />
+
+const pureCellRenderer = (title: keyof SongInfo, cellData?: any) => {
+  if (cellData) {
+    return tagColumns.has(title) ? tagRenderer(cellData, allTagsText.value) : cellData
+  }
+  else return null
+}
+// table columns
+const columns: Column<SongInfo>[] = selectedTitles.value.map(title => ({
+  width: 300,
+  title: displayName.value[title],
+  key: title,
+  dataKey: title,
+  cellRenderer: ({ cellData }) => pureCellRenderer(title, cellData),
+}))
+
 // 表格筛选处理
 const tagColumns = new Set(['tags'])
 const sortableColumns = new Set(['id', 'name', 'artist', 'language', 'paid', 'top', 'sc'])
 const filterableColumns = new Set(['artist', 'language', 'paid', 'top', 'sc'])
 
 const tableRef = ref<InstanceType<typeof ElTable>>()
-watch(songs, () => tableRef.value!.clearFilter())
+// watch(songs, () => tableRef.value!.clearFilter())
 
 const getFilterMethod = (title: keyof SongInfo) => filterableColumns.has(title) ? filterColumn : (tagColumns.has(title) ? filterTag : undefined)
 const getFilters = (title: keyof SongInfo) => {
@@ -206,9 +205,9 @@ const allFilterableColumns = computed(() => {
 })
 
 const filterTag = (
-    _: string,    // 这玩意有啥用？
-    row: SongInfo,
-    column: TableColumnCtx<SongInfo>
+  _: string,    // 这玩意有啥用？
+  row: SongInfo,
+  column: TableColumnCtx<SongInfo>
 ) => {
   const selected = column.filteredValue
   if (selected.length === 0) return true
@@ -219,8 +218,8 @@ const filterTag = (
 }
 
 const filterColumn = (
-    _: string,
-    row: SongInfo,
-    column: TableColumnCtx<SongInfo>
+  _: string,
+  row: SongInfo,
+  column: TableColumnCtx<SongInfo>
 ) => column.filteredValue.some(v => v === row[column.property as keyof SongInfo])
 </script>

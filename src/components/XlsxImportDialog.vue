@@ -91,18 +91,20 @@ onChange(async (files) => {
         dataType: 'ignore'
       }
 
-      if (text === '序号' || text === 'id') {
+      if (text.includes('序号') || text.includes('id')) {
         titleInfo.dataType = 'id'
-      } else if (text === '歌名' || text === '名称') {
+      } else if (text.includes('歌名') || text.includes('名称')) {
         titleInfo.dataType = 'name'
-      } else if (text.includes('翻译')) {
+      } else if (text.includes('翻译') || text.includes('别名')) {
         titleInfo.dataType = 'alias'
       } else if (text.includes('原唱') || text.includes('歌手')) {
         titleInfo.dataType = 'artist'
-      } else if (text === '语言' || text === '语种') {
+      } else if (text.includes('语言') || text.includes('语种')) {
         titleInfo.dataType = 'language'
-      } else if (text === '标签' || text === '分类' || text === '类别' || text === '备注') {
+      } else if (text.includes('标签') || text.includes('分类') || text.includes('类别')) {
         titleInfo.dataType = 'tags'
+      } else if (text.includes('备注')) {
+        titleInfo.dataType = 'remark'
       } else if (text.includes('歌切') || text.includes('bv')) {
         titleInfo.dataType = 'BVID'
       } else if (text.includes('网易云播客') || text.includes('网易云电台')) {
@@ -115,6 +117,8 @@ onChange(async (files) => {
         titleInfo.dataType = 'paid'
       } else if (text.includes('sc')) {
         titleInfo.dataType = 'sc'
+      } else if (text.includes('链接')) {
+        titleInfo.dataType = 'links'
       }
       rowTitleData.value.push(titleInfo)
     })
